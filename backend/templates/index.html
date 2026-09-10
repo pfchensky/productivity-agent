@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}
+PRODUCTIVITY TASK MANAGER
+{% endblock %}
+
+
+{% block content %}
+<h1>This is a flask app testing!</h1>
+<h2>Will be later configured to be the productivity agent</h2>
+
+
+<table>
+    <tr>
+        <th>Order</th>
+        <th>Task Details</th>
+        <th>Date of Creation</th>
+        <th>Status</th>
+    </tr>
+    {% for task in taskList %}
+    <tr>
+        <td>{{ task }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<form action="{{url_for('add_task')}}" method = "POST">
+    <input type="text" placeholder="Task goes here!" name='user_input'>
+    <button>Submit</button>
+</form>
+
+{% endblock %}
