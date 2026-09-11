@@ -14,19 +14,61 @@ PRODUCTIVITY TASK MANAGER
     <tr>
         <th>Order</th>
         <th>Task Details</th>
-        <th>Date of Creation</th>
+        <th>Deadline</th>
+        <th>Importance</th>
+        <th>Progress</th>
         <th>Status</th>
     </tr>
+
     {% for task in taskList %}
     <tr>
-        <td>{{ task }}</td>
+        <td>{{ loop.index }}</td>
+        <td>{{ task.name }}</td>
+        <td>{{ task.deadline }}</td>
+        <td>{{ task.importance }}</td>
+        <td>{{ task.progress }}%</td>
+        <td>{{ task.status }}</td>
     </tr>
     {% endfor %}
 </table>
 
-<form action="{{url_for('add_task')}}" method = "POST">
-    <input type="text" placeholder="Task goes here!" name='user_input'>
-    <button>Submit</button>
+<form action="{{ url_for('add_task') }}" method="POST">
+    <div>
+        <label for="name">Task name:</label>
+        <input id="name" type="text" name="user_input"
+               placeholder="Task goes here!" required>
+    </div>
+
+    <div>
+        <label for="deadline">Deadline:</label>
+        <input id="deadline" type="date" name="deadline" required>
+    </div>
+
+    <div>
+        <label for="importance">Importance:</label>
+        <select id="importance" name="importance">
+            <option value="Low">Low</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="High">High</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="progress">Progress (%):</label>
+        <input id="progress" type="number" name="progress"
+               min="0" max="100" step="1" value="0" required>
+    </div>
+
+    <div>
+        <label for="status">Status:</label>
+        <select id="status" name="status">
+            <option value="Not Started" selected>Not Started</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+        </select>
+    </div>
+
+    <button type="submit">Add Task</button>
 </form>
 
 {% endblock %}
