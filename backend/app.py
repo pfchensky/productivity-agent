@@ -50,7 +50,7 @@ def add_task():
     task_service.add_task(task)
     return redirect('/')
 
-@app.route('/delete/<int:task_id>', methods=['POST'])
+@app.route('/delete/<string:task_id>', methods=['POST'])
 def delete_task(task_id):
     deleted = task_service.delete_task(task_id)
 
@@ -142,7 +142,7 @@ def api_get_tasks():
     ]), 200
 
 
-@app.route('/api/tasks/<int:task_id>', methods=['GET'])
+@app.route('/api/tasks/<string:task_id>', methods=['GET'])
 def api_get_task(task_id):
     task = task_service.get_task_by_id(task_id)
 
@@ -152,7 +152,7 @@ def api_get_task(task_id):
     return jsonify(task.to_dict()), 200
 
 
-@app.route('/api/tasks/<int:task_id>', methods=['DELETE'])
+@app.route('/api/tasks/<string:task_id>', methods=['DELETE'])
 def api_delete_task(task_id):
     deleted = task_service.delete_task(task_id)
 
@@ -164,7 +164,7 @@ def api_delete_task(task_id):
     }), 200
 
 
-@app.route('/api/tasks/<int:task_id>', methods=['PATCH'])
+@app.route('/api/tasks/<string:task_id>', methods=['PATCH'])
 def api_update_task(task_id):
     data = request.get_json(silent=True)
 

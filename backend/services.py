@@ -1,55 +1,68 @@
+from google.api_core.exceptions import NotFound
+
+from firebase_config import db
+from models import Task
+
+
 class TaskService:
     def __init__(self):
-        self.tasks = []
-        self.next_id = 1
+        self.collection = db.collection("tasks")
 
     def generate_task_id(self):
-        task_id = self.next_id
-        self.next_id += 1
-        return task_id
+        # Generate a document ID without writing to Firestore.
+        return self.collection.document().id
 
     def add_task(self, task):
-        self.tasks.append(task)
+        self.collection.document(task.task_id).set(task.to_dict())
         return task
 
     def get_all_tasks(self):
-        return self.tasks
+        tasks = []
+
+        for document in self.collection.stream():
+            data = document.to_dict()
+            data["task_id"] = document.id
+            tasks.append(Task(**data))
+
+        return tasks
 
     def get_task_by_id(self, task_id):
-        for task in self.tasks:
-            if task.task_id == task_id:
-                return task
+        document = self.collection.document(task_id).get()
 
-        return None
+        if not document.exists:
+            return None
+
+        data = document.to_dict()
+        data["task_id"] = document.id
+        return Task(**data)
 
     def delete_task(self, task_id):
-        task = self.get_task_by_id(task_id)
+        document_ref = self.collection.document(task_id)
 
-        if task is None:
+        if not document_ref.get().exists:
             return False
 
-        self.tasks.remove(task)
+        document_ref.delete()
         return True
 
     def update_task(self, task_id, data):
-        task = self.get_task_by_id(task_id)
+        document_ref = self.collection.document(task_id)
 
-        if task is None:
+        allowed_fields = {
+            "name", "deadline", "importance", "progress", "status"
+        }
+        updates = {
+            key: value
+            for key, value in data.items()
+            if key in allowed_fields
+        }
+
+        if not updates:
+            return self.get_task_by_id(task_id)
+
+        try:
+            document_ref.update(updates)
+        except NotFound:
             return None
 
-        if "name" in data:
-            task.name = data["name"]
-
-        if "deadline" in data:
-            task.deadline = data["deadline"]
-
-        if "importance" in data:
-            task.importance = data["importance"]
-
-        if "progress" in data:
-            task.progress = data["progress"]
-
-        if "status" in data:
-            task.status = data["status"]
-
-        return task
+        return self.get_task_by_id(task_id)
