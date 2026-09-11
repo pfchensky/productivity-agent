@@ -50,6 +50,15 @@ def add_task():
     task_service.add_task(task)
     return redirect('/')
 
+@app.route('/delete/<int:task_id>', methods=['POST'])
+def delete_task(task_id):
+    deleted = task_service.delete_task(task_id)
+
+    if not deleted:
+        return "Task not found.", 404
+
+    return redirect('/')
+
 
 # ---------- API input validation ----------
 
