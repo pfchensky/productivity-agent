@@ -10,3 +10,12 @@ h2{
     font-size:18px;
     margin:2;
 }
+.task-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.task-actions form {
+    margin: 0;
+}
