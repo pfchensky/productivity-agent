@@ -2,6 +2,7 @@ class Task:
     def __init__(
         self,
         task_id,
+        user_id,
         name,
         deadline,
         importance,
@@ -9,6 +10,7 @@ class Task:
         status="Not Started"
     ):
         self.task_id = task_id
+        self.user_id = user_id
         self.name = name
         self.deadline = deadline
         self.importance = importance
@@ -19,6 +21,7 @@ class Task:
         return {
             "task_id": self.task_id,
             "name": self.name,
+            "user_id": self.user_id,
             "deadline": self.deadline,
             "importance": self.importance,
             "progress": self.progress,

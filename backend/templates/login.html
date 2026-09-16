@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Login | Productivity Agent
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h1>Productivity Agent</h1>
+    <p>Please sign in to view your tasks.</p>
+
+    <h2>Sign in with email</h2>
+
+    <form id="email-login-form">
+        <div>
+            <label>Email:</label><br>
+            <input id="login-email" type="email" required>
+        </div>
+
+       <div>
+           <label>Password:</label><br>
+           <input id="login-password" type="password" required>
+       </div>
+        <button type="submit">Log in</button>
+    </form>
+
+    <p>
+        Don't have an account?<br>
+        <a href="{{ url_for('register') }}">Create an account</a>
+    </p>
+
+    <p>— or —</p>
+
+    <button id="google-login-button" type="button">
+        Sign in with Google
+    </button>
+</div>
+
+
+<p id="login-error" style="color: red;"></p>
+
+<script type="module" src="{{ url_for('static', filename='auth.js') }}"></script>
+{% endblock %}

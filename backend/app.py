@@ -1,21 +1,75 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect,session, jsonify, url_for
 from models import Task
 from services import TaskService
+from firebase_admin import auth
 
 app = Flask(__name__)
 task_service = TaskService()
+app.config["SECRET_KEY"] = "replace-this-with-a-long-random-secret"
 
 
 # ---------- Page routes  ----------
+@app.route("/login")
+def login():
+    if session.get("user_id"):
+        return redirect(url_for("home"))
+
+    return render_template("login.html")
+
+@app.route("/register")
+def register():
+    if session.get("user_id"):
+        return redirect(url_for("home"))
+
+    return render_template("register.html")
+
+@app.route("/session-login", methods=["POST"])
+def session_login():
+    data = request.get_json()
+    id_token = data.get("idToken")
+
+    if not id_token:
+        return jsonify({"error": "Missing Firebase ID token."}), 400
+
+    try:
+        decoded_token = auth.verify_id_token(id_token)
+    except Exception:
+        return jsonify({"error": "Invalid Firebase ID token."}), 401
+
+    session.clear()
+    session["user_id"] = decoded_token["uid"]
+    session["user_email"] = decoded_token.get("email", "")
+    session["user_name"] = decoded_token.get("name", "")
+    return jsonify({"success": True})
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 
 @app.route('/')
 def home():
-    tasks = task_service.get_all_tasks()
-    return render_template('index.html', taskList=tasks)
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("login"))
+
+    tasks = task_service.get_all_tasks(user_id)
+
+    return render_template(
+        'index.html',
+        taskList=tasks,
+        user_name=session.get("user_name"),
+        user_email=session.get("user_email")
+    )
 
 
 @app.route('/add', methods=['POST'])
 def add_task():
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return redirect(url_for("login"))
+
     name = request.form.get('user_input', '').strip()
     deadline = request.form.get('deadline', '')
     importance = request.form.get('importance', 'Medium')
@@ -40,6 +94,7 @@ def add_task():
 
     task = Task(
         task_id=task_service.generate_task_id(),
+        user_id=user_id,
         name=name,
         deadline=deadline,
         importance=importance,
@@ -52,7 +107,7 @@ def add_task():
 
 @app.route('/delete/<string:task_id>', methods=['POST'])
 def delete_task(task_id):
-    deleted = task_service.delete_task(task_id)
+    deleted = task_service.delete_task(task_id,session.get("user_id"))
 
     if not deleted:
         return "Task not found.", 404
@@ -61,7 +116,7 @@ def delete_task(task_id):
 
 @app.route('/edit/<string:task_id>', methods=['GET'])
 def edit_task(task_id):
-    task = task_service.get_task_by_id(task_id)
+    task = task_service.get_task_by_id(task_id,session.get("user_id"))
 
     if task is None:
         return "Task not found.", 404
@@ -70,7 +125,7 @@ def edit_task(task_id):
 
 @app.route('/update/<string:task_id>', methods=['POST'])
 def update_task(task_id):
-    task = task_service.get_task_by_id(task_id)
+    task = task_service.get_task_by_id(task_id,session.get("user_id"))
 
     if task is None:
         return "Task not found.", 404
@@ -105,7 +160,8 @@ def update_task(task_id):
             "importance": importance,
             "progress": progress,
             "status": status
-        }
+        },
+        session.get("user_id")
     )
 
     if updated_task is None:
