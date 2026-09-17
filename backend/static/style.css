@@ -19,3 +19,8 @@ h2{
 .task-actions form {
     margin: 0;
 }
+
+.login-container {
+    width: 350px;
+    margin: 80px auto;
+}

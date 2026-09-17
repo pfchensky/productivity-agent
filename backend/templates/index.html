@@ -6,6 +6,16 @@ PRODUCTIVITY TASK MANAGER
 
 
 {% block content %}
+
+<p>
+    Signed in as:
+    {{ user_name or user_email }}
+</p>
+
+<form action="{{ url_for('logout') }}" method="POST">
+    <button type="submit">Logout</button>
+</form>
+
 <h1>This is a flask app testing!</h1>
 <h2>Will be later configured to be the productivity agent</h2>
 

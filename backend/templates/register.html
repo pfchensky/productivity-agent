@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Create Account | Productivity Agent
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h1>Create an account</h1>
+
+    <form id="register-form">
+        <div>
+            <label for="register-email">Email:</label><br>
+            <input id="register-email" type="email" required>
+        </div>
+
+        <div>
+            <label for="register-password">Password:</label><br>
+            <input id="register-password" type="password" minlength="6" required>
+        </div>
+
+        <button type="submit">Create account</button>
+    </form>
+
+    <p>
+        Already have an account?
+        <a href="{{ url_for('login') }}">Log in</a>
+    </p>
+</div>
+
+
+<p id="login-error" style="color: red;"></p>
+
+<script type="module" src="{{ url_for('static', filename='auth.js') }}"></script>
+{% endblock %}
