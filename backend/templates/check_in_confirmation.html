@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Confirm Check-in
+{% endblock %}
+
+
+{% block content %}
+<p>Task: {{task.name}}</p>
+
+<p>Summary: {{parsed_result["summary"]}}</p>
+
+<p>Progress: {% if parsed_result["progress"] is not none %}
+    {{ parsed_result["progress"] }}%
+    {% else %}
+        No Progress Update
+    {% endif %}
+</p>
+
+<p>Time Remaining: {% if parsed_result["time_remaining"] is not none %}
+    {{ parsed_result["time_remaining"] }}
+    {% else %}
+        No Time Estimate
+    {% endif %}
+</p>
+
+<p>Importance Signal: {% if parsed_result["importance_signal"] is not none %}
+    {{ parsed_result["importance_signal"] }}
+    {% else %}
+        No Importance Change Detected
+    {% endif %}
+</p>
+
+<form action="{{ url_for('confirm_task', task_id = task.task_id) }}" method="POST">
+    <input type="hidden"
+           name="progress"
+           value="{% if parsed_result['progress'] is not none %}{{ parsed_result['progress'] }}{% endif %}">
+
+    <input type="hidden"
+           name="time_remaining"
+           value="{% if parsed_result['time_remaining'] is not none %}{{ parsed_result['time_remaining'] }}{% endif %}">
+    
+    <input type="hidden"
+           name="importance_signal"
+           value="{% if parsed_result['importance_signal'] is not none %}{{ parsed_result['importance_signal'] }}{% endif %}">
+    <input type="hidden"
+           name="summary"
+           value="{{parsed_result['summary']}}">
+
+    <button type="submit">OK</button>
+</form>
+
+<a href="{{ url_for('home') }}">Back to Tasks</a>
+{% endblock %}

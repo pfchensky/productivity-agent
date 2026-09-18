@@ -53,6 +53,23 @@ PRODUCTIVITY TASK MANAGER
     {% endfor %}
 </table>
 
+<form action="{{ url_for('check_in') }}" method="POST">
+    <label for="check_in_task">Check-in:</label>
+    <select name = "task_id" required>
+        <option value="" disabled selected> Select a task</option>
+        {% for task in taskList %}
+            <option value="{{ task.task_id }}"> {{task.name}} </option>
+        {% endfor %}
+    </select>
+    
+    <textarea id="check_in_task"
+                  name="user_input"
+                  placeholder="What did you work on?"
+                  required></textarea>
+
+    <button type="submit">Submit Check-in</button>
+</form>
+
 <form action="{{ url_for('add_task') }}" method="POST">
     <div>
         <label for="name">Task name:</label>

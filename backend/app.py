@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect,session, jsonify, ur
 from models import Task
 from services import TaskService
 from firebase_admin import auth
+from llm_parser import parse_check_in
 
 app = Flask(__name__)
 task_service = TaskService()
@@ -168,6 +169,94 @@ def update_task(task_id):
         return "Task not found.", 404
 
     return redirect('/')
+
+@app.route('/check-in', methods=['POST'])
+def check_in():
+
+    user_id = session.get("user_id")
+    selected_task_id = request.form.get("task_id", "").strip()
+    check_in_text = request.form.get("user_input", "").strip()
+
+    if not selected_task_id:
+        return "Please select a task", 400
+    if not user_id:
+        return redirect(url_for("login"))
+    if not check_in_text:
+        return "Check-in text is required", 404
+
+
+    task = task_service.get_task_by_id(selected_task_id, user_id)
+
+    if not task:
+        return "Task not found", 404
+
+    task_context = {
+        "name" : task.name,
+        "current_progress" : task.progress,
+        "importance" : task.importance,
+        "deadline" : task.deadline
+    }
+
+    parsed_result = parse_check_in(check_in_text, task_context)
+
+    return render_template("check_in_confirmation.html", 
+                           task = task, 
+                           parsed_result = parsed_result, 
+                           check_in_text = check_in_text,
+                           )
+
+@app.route("/confirm-task/<task_id>", methods=['POST'])
+def confirm_task(task_id):
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return redirect(url_for("login"))
+
+    task = task_service.get_task_by_id(task_id, user_id)
+
+    if not task:
+        return "Task not found", 404
+
+    progress_value = request.form.get("progress")
+    time_remaining = request.form.get("time_remaining")
+    importance_signal = request.form.get("importance_signal")
+    summary = request.form.get("summary")
+
+
+    updates = {}
+
+    if progress_value:
+        try: 
+            updated_progress = int(progress_value)
+
+        except ValueError:
+            return "Progress must be a whole number", 400
+
+        if updated_progress >= 0 and updated_progress <= 100:
+            updates["progress"] = updated_progress
+        else:
+            return "Invalid Progress Error", 400
+
+
+    if importance_signal == "Increased":
+        if task.importance == "Low":
+            updated_importance = "Medium"
+
+        elif task.importance == "Medium":
+            updated_importance = "High"
+
+        else:
+            updated_importance = "High"
+
+        updates["importance"] = updated_importance
+
+    task_service.update_task(
+        task_id,
+        updates,
+        user_id
+    )
+
+    return redirect(url_for("home"))   
 
 
 # ---------- Run the application ----------
